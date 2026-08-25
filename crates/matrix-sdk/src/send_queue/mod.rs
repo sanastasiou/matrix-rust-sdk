@@ -143,6 +143,7 @@ use std::{
         Arc, RwLock,
         atomic::{AtomicBool, Ordering},
     },
+    time::Duration,
 };
 
 use eyeball::SharedObservable;
@@ -707,6 +708,8 @@ impl RoomSendQueue {
 
                 Err(err) => {
                     warn!("error when loading next request to send: {err}");
+                    // Don't hammer a failing store; back off a bit before retrying.
+                    matrix_sdk_common::sleep::sleep(Duration::from_millis(250)).await;
                     continue;
                 }
             };
